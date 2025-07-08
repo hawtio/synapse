@@ -1,0 +1,14 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: synapse-terminal
+  namespace: synapse
+  labels:
+    app: synapse
+spec:
+  to:
+    kind: Service
+    name: synapse-terminal
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: reencrypt

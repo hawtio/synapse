@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: synapse-terminal
+  namespace: synapse
+  labels:
+    app: synapse
+spec:
+  type: NodePort
+  ports:
+    - name: synapse-terminal
+      port: 80
+      protocol: TCP
+      targetPort: express
+  selector:
+    app: synapse
+    deployment: synapse-terminal

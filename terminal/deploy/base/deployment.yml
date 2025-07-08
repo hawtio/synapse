@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: synapse-terminal
+  namespace: synapse
+  labels:
+    app: synapse
+    deployment: synapse-terminal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: synapse
+      deployment: synapse-terminal
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      labels:
+        app: synapse
+        deployment: synapse-terminal
+    spec:
+      containers:
+        - name: synapse-terminal
+          image: quay.io/hawtio/synapse-terminal
+          imagePullPolicy: Always
+          env:
+            - name: SYNAPSE_APP_PORT
+              value: 8080
+          ports:
+            - name: express
+              containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: express
+              scheme: HTTP
+            periodSeconds: 10
+            timeoutSeconds: 1
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: express
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 1
+          resources:
+            requests:
+              cpu: "0.2"
+              memory: 32Mi
+            limits:
+              cpu: "1.0"
+              memory: 500Mi

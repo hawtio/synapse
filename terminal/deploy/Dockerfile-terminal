@@ -1,0 +1,50 @@
+FROM docker.io/library/node:22-alpine as builder
+
+WORKDIR /synapse
+
+COPY terminal/.yarn/releases .yarn/releases
+COPY terminal/.yarnrc.yml ./
+COPY terminal/src ./src
+COPY terminal/package.json ./
+COPY terminal/tsconfig.json ./
+COPY terminal/webpack.config.js ./
+COPY terminal/yarn.lock ./
+
+RUN yarn install --inline-builds
+RUN yarn build
+
+#====================================================
+
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.4
+
+#
+# The user id
+#
+ENV NODE_USER 9999
+
+ENV NODE_MAJOR_VERSION 22
+ENV SYNAPSE_DIR=/opt/synapse
+
+RUN microdnf -y module enable nodejs:22
+RUN microdnf repoquery nodejs
+RUN microdnf -y install --setopt=tsflags=nodocs nodejs && microdnf clean all
+
+COPY --from=builder /synapse/dist ${SYNAPSE_DIR}/
+COPY terminal/env.product ${SYNAPSE_DIR}/
+COPY terminal/synapse.sh ${SYNAPSE_DIR}/
+
+#
+# Finalize permissions for synapse files
+#
+RUN useradd -ms /bin/sh -u ${NODE_USER} synapse
+RUN chown -R ${NODE_USER} ${SYNAPSE_DIR}
+RUN chmod 755 ${SYNAPSE_DIR}/synapse.sh
+
+# Allow the environment to be updated by arbitrary image user
+RUN chmod 666 ${SYNAPSE_DIR}/env.product
+
+USER ${NODE_USER}
+
+EXPOSE 3000
+
+CMD ["/opt/synapse/synapse.sh"]
