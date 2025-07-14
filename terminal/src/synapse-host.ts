@@ -26,6 +26,7 @@ async function startServer() {
    * Large Language Model Settings
    */
   const provider = process.env.LLM_PROVIDER ?? ''
+  const apiKey = process.env.LLM_API_KEY
   const name = process.env.LLM_NAME ?? ''
   const baseURL = process.env.LLM_BASE_URL
   const modelPath = process.env.LLM_MODEL_PATH
@@ -33,18 +34,21 @@ async function startServer() {
   const modelConfig: ModelConfiguration = {
     provider,
     name,
+    apiKey,
     temperature: 0.2,
     baseURL,
     modelPath
   }
 
-  logger.info('**************************************')
-  logger.info(`* Environment:       ${environment}`)
-  logger.info(`* App Port:          ${port}`)
-  logger.info(`* Log Level:         ${logger.level}`)
-  logger.info(`* SSL Enabled:       ${sslSupport !== null}`)
-  logger.info('* LLM Configuration: ', modelConfig)
-  logger.info('**************************************')
+  logger.info('****************************************************')
+  logger.info(`* Environment:             ${environment}`)
+  logger.info(`* App Port:                ${port}`)
+  logger.info(`* Log Level:               ${logger.level}`)
+  logger.info(`* SSL Enabled:             ${sslSupport !== null}`)
+  logger.info(`* LLM Provider:            ${modelConfig.provider}`)
+  logger.info(`* LLM Name:                ${modelConfig.name}`)
+  logger.info(`* LLM URL (if applicable): ${modelConfig.baseURL}`)
+  logger.info('****************************************************')
 
   const model = await initModel(modelConfig)
   if (!model) {

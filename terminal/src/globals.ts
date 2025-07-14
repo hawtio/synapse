@@ -26,6 +26,10 @@ export interface ModelConfiguration {
   // e.g., "gemini-1.5-flash" or "mistralai/Mistral-7B..."
   name: string,
 
+  // The api key for access to the LLM
+  // (if required, eg. google, openai)
+  apiKey?: string
+
   temperature?: number,
 
   // Only used for OpenAI-compatible endpoints

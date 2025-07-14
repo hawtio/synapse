@@ -28,11 +28,31 @@ spec:
           image: quay.io/hawtio/synapse-terminal
           imagePullPolicy: Always
           env:
-            - name: SYNAPSE_APP_PORT
-              value: 8080
+          - name: SYNAPSE_APP_PORT
+            value: 8080
+          - name: LLM_PROVIDER
+            valueFrom:
+              secretKeyRef:
+                name: synapse-terminal-llm-credentials
+                key: provider
+          - name: LLM_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: synapse-terminal-llm-credentials
+                key: key
+          - name: LLM_NAME
+            valueFrom:
+              secretKeyRef:
+                name: synapse-terminal-llm-credentials
+                key: name
+          - name: LLM_BASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: synapse-terminal-llm-credentials
+                key: url
           ports:
-            - name: express
-              containerPort: 8080
+          - name: express
+            containerPort: 8080
           livenessProbe:
             httpGet:
               path: /status
@@ -50,8 +70,6 @@ spec:
             timeoutSeconds: 1
           resources:
             requests:
-              cpu: "0.2"
               memory: 32Mi
             limits:
-              cpu: "1.0"
               memory: 500Mi

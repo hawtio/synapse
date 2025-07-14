@@ -6,3 +6,4 @@ resources:
 - ingress.yml
 - serviceaccount.yml
 - ../base
+namespace: synapse

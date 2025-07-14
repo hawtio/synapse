@@ -33,8 +33,8 @@ export function configureSSLSupport(): SSLOptions | null {
   checkEnvVar(sslKey, 'SSL Certifcate Key')
   checkEnvVar(sslCertificate, 'SSL Certifcate')
   checkEnvVar(sslCertificateCA, 'SSL Certifcate Authority')
-  checkEnvVar(sslProxyKey, 'SSL Proxy Certifcate Key')
-  checkEnvVar(sslProxyCertificate, 'SSL Proxy Certifcate')
+  // checkEnvVar(sslProxyKey, 'SSL Proxy Certifcate Key')
+  // checkEnvVar(sslProxyCertificate, 'SSL Proxy Certifcate')
 
   return {
     ca: fs.readFileSync(sslCertificateCA),

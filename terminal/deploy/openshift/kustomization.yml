@@ -21,3 +21,4 @@ patches:
 - path: ../patches/patch-service-ssl-ports.yml
   target:
     kind: Service
+namespace: synapse

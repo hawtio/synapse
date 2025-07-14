@@ -49,6 +49,11 @@ INTERNAL_SERVER_SSL ?= true
 # The name of the service-account user
 SYNAPSE_USER ?= synapse-user
 
+LLM_PROVIDER ?= openai
+LLM_API_KEY ?= 123-123
+LLM_NAME ?= ''
+LLM_BASE_URL ?= ''
+
 # Uninstall all hawtio-onlineresources: [true|false]
 UNINSTALL_ALL ?=false
 
@@ -68,9 +73,9 @@ SSL_INGRESS_PATCH := patch-ingress-ssl-ports.yml
 # Parameter: directory of the kustomization.yaml
 #
 define set-kustomize-image
-	$(if $(filter $(IMAGE_NAME),$(CUSTOM_TERMINAL_IMAGE):$(CUSTOM_TERMINAL_VERSION)),,\
+	$(if $(filter $(TERMINAL_IMAGE_NAME),$(CUSTOM_TERMINAL_IMAGE):$(CUSTOM_TERMINAL_VERSION)),,\
 		@cd $(1) || exit 1 && \
-			$(KUSTOMIZE) edit set image $(IMAGE_NAME)=$(CUSTOM_TERMINAL_IMAGE):$(CUSTOM_TERMINAL_VERSION))
+			$(KUSTOMIZE) edit set image $(TERMINAL_IMAGE_NAME)=$(CUSTOM_TERMINAL_IMAGE):$(CUSTOM_TERMINAL_VERSION))
 endef
 
 #
@@ -100,14 +105,6 @@ define add-remove-kind-patch
 endef
 
 #
-# Macro for adding / removing the prometheus resources for monitoring
-#
-define add-remove-hawtconfig-configmap
-	cd $(1) || exit 1 && \
-		$(KUSTOMIZE) edit $(2) resource configmap-hawtio-online.yml &> /dev/null
-endef
-
-#
 # Checks if the cluster user has the necessary privileges to be a cluster-admin
 # In this case if the user can list the CRDs then probably a cluster-admin
 #
@@ -131,6 +128,11 @@ else
 endif
 endif
 
+.llm-credentials:
+	NAMESPACE=$(NAMESPACE) LLM_PROVIDER=$(LLM_PROVIDER) \
+	LLM_API_KEY=$(LLM_API_KEY) LLM_NAME=$(LLM_NAME) \
+	LLM_BASE_URL=$(LLM_BASE_URL) ./script/generate-llm-credentials.sh
+
 #---
 #
 #@ install
@@ -148,6 +150,11 @@ endif
 #**                            (only configurable in 'k8s' -- assumed in 'openshift')
 #** CUSTOM_TERMINAL_IMAGE:   Set a custom image to install from
 #** CUSTOM_TERMINAL_VERSION: Set a custom version to install from
+#** LLM_PROVIDER:            Set the desired LLM Provider
+#**                            [google, openai, mistral, openai-compatible, ollama]
+#** LLM_API_KEY:             Set the desired LLM API KEY, if required
+#** LLM_NAME:                Set the desired LLM Model Name, if required
+#** LLM_BASE_URL:            Set the desired LLM URL, if required
 #** DRY_RUN:                 Print the resources to be applied instead of applying them
 #**                            [ true | false ]
 #
@@ -163,6 +170,7 @@ ifeq ($(CLUSTER_TYPE), k8s)
 endif
 # Add ssl support in deployment
 	@$(MAKE) -s .ssl-support
+	@$(MAKE) -s .llm-credentials
 #
 # Build the resources
 # Either apply to the cluster or output to CLI
@@ -175,7 +183,7 @@ ifeq ($(DRY_RUN), false)
 		kubectl apply -f -
 else
 	@$(KUSTOMIZE) build $(KOPTIONS) $(CLUSTER_TYPE) | \
-		sed 's/$(PLACEHOLDER)/$(NAMESPACE)/'
+		sed 's/$(LLM_API_KEY)/$(NAMESPACE)/'
 endif
 
 #---

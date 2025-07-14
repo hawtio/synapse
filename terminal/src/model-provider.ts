@@ -21,7 +21,7 @@ function getModelName(provider: string, chosenName?: string): string {
 }
 
 async function getModel(config: ModelConfiguration): Promise<BaseChatModel | null> {
-  const { provider, temperature, baseURL, modelPath } = config
+  const { provider, apiKey, temperature, baseURL, modelPath } = config
   const name = getModelName(config.provider, config.name)
 
   if (!name || name.length === 0) {
@@ -33,37 +33,40 @@ async function getModel(config: ModelConfiguration): Promise<BaseChatModel | nul
 
   switch (provider) {
     case 'google':
-      if (!process.env.GOOGLE_API_KEY) {
-        logger.error('GOOGLE_API_KEY not set. Cannot initialize Google Gemini model.')
+      if (!apiKey) {
+        logger.error('API_KEY not set. Cannot initialize Google Gemini model.')
         return null
       }
       const { ChatGoogleGenerativeAI } = await import('@langchain/google-genai')
       return new ChatGoogleGenerativeAI({
+        apiKey: apiKey,
         model: name,
         temperature
       })
     case 'openai':
-      if (!process.env.OPENAI_API_KEY) {
-        logger.error('OPENAI_API_KEY not set. Cannot initialize OpenAI model.')
+      if (!apiKey) {
+        logger.error('API_KEY not set. Cannot initialize OpenAI model.')
         return null
       }
       const { ChatOpenAI } = await import ('@langchain/openai')
       return new ChatOpenAI({
+        apiKey: apiKey,
         model: name,
         temperature
       })
     case 'mistral':
-      if (!process.env.MISTRAL_API_KEY) {
-        logger.error('MISTRAL_API_KEY not set. Cannot initialize Mistral model.')
+      if (!apiKey) {
+        logger.error('API_KEY not set. Cannot initialize Mistral model.')
         return null
       }
       const { ChatMistralAI } = await import ('@langchain/mistralai')
       return new ChatMistralAI({
+        apiKey: apiKey,
         model: name,
         temperature,
       })
     case 'openai-compatible':
-      if (!baseURL) {
+      if (!baseURL || baseURL.length === 0) {
         logger.error("A 'baseURL' is required for the 'openai-compatible' provider.")
         return null
       }
