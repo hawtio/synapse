@@ -10,7 +10,6 @@ import io.quarkiverse.mcp.server.ToolArg;
 import io.quarkiverse.mcp.server.ToolResponse;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.core.HttpHeaders;
 
 @ApplicationScoped
 public class JanusServer {
@@ -20,14 +19,10 @@ public class JanusServer {
 	// Inject the KubernetesClient. Quarkus will configure this automatically
 	// to talk to the OpenShift cluster it's running in.
 	@Inject
-	KubernetesClient k8sClient;
+	private KubernetesClient k8sClient;
 
 	@Inject
-	HttpHeaders headers;
-
-	// A conventional port for Jolokia. This could also be discovered from the Pod's
-	// container spec.
-	private static final int JOLOKIA_PORT = 8778;
+	private JolokiaService jolokiaService;
 
 	/**
 	 * Reads a specific JMX MBean attribute from a uniquely identified pod.
@@ -50,20 +45,26 @@ public class JanusServer {
 
 		// --- Dynamic Service Discovery Logic ---
 		try {
-//			// Use the Kubernetes client to fetch the pod object.
-//			Pod targetPod = k8sClient.pods().inNamespace(namespace).withName(podName).get();
-//
-//			if (targetPod == null) {
-//				return ToolResponse.error("Pod not found: " + podName + " in namespace: " + namespace);
-//			}
-//
-//			// Get the pod's internal IP address.
-//			String podIp = targetPod.getStatus().getPodIP();
-//			if (podIp == null || podIp.isEmpty()) {
-//				return ToolResponse
-//						.error("Pod " + podName + " does not have an IP address yet. It may still be starting.");
-//			}
-//
+			// Use the Kubernetes client to fetch the pod object.
+			LOG.debugf("Fetching the pod with name '%s' from namespace '%s' in cluster", podName, namespace);
+			Pod targetPod = k8sClient.pods().inNamespace(namespace).withName(podName).get();
+
+			if (targetPod == null) {
+				return ToolResponse.error("Pod not found: " + podName + " in namespace: " + namespace);
+			}
+
+			// Get the pod's internal IP address.
+			LOG.debugf("Fetching the ip address for pod with name '%s' from namespace '%s' in cluster", podName,
+					namespace);
+			String podIp = targetPod.getStatus().getPodIP();
+			if (podIp == null || podIp.isEmpty()) {
+				return ToolResponse
+						.error("Pod " + podName + " does not have an IP address yet. It may still be starting.");
+			}
+
+			LOG.debugf(String.format("The pod with name '%s' from namespace '%s' has the ip address '%s'", podName,
+					namespace, podIp));
+
 //			// Construct the Jolokia URL on the fly.
 //			String jolokiaUrl = String.format("http://%s:%d/jolokia", podIp, JOLOKIA_PORT);
 //			log.info("Dynamically discovered Jolokia URL: %s", jolokiaUrl);
