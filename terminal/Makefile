@@ -33,8 +33,7 @@ DATETIMESTAMP=$(shell date -u '+%Y%m%d-%H%M%S')
 VERSION := $(subst -SNAPSHOT,-$(DATETIMESTAMP),$(VERSION))
 
 
-TERMINAL := terminal
-TERMINAL_DOCKERFILE=$(TERMINAL)/deploy/Dockerfile-terminal
+TERMINAL_DOCKERFILE=deploy/Dockerfile-terminal
 
 #
 # Situations when user wants to override
@@ -101,18 +100,18 @@ CONTAINER_BUILDER=$(shell command -v podman 2> /dev/null)
 endif
 
 setup: yarn
-	cd $(TERMINAL) && yarn install
+	yarn install
 
 terminal-build: setup
 	@echo "####### Building hawtio/synapse-terminal ..."
-	cd $(TERMINAL) && yarn build
+	yarn build
 
 build: terminal-build
 
 clean:
-	rm -rf $(TERMINAL)/dist
+	rm -rf dist
 
-image-terminal: container-builder
+image: container-builder
 	@echo "####### Building Terminal container image..."
 	$(CONTAINER_BUILDER) build -t $(CUSTOM_TERMINAL_IMAGE):$(CUSTOM_TERMINAL_VERSION) -f $(TERMINAL_DOCKERFILE) .
 
