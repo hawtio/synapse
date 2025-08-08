@@ -1,5 +1,7 @@
 package io.hawt.synapse.janus;
 
+import org.jboss.logging.Logger;
+
 import io.fabric8.kubernetes.api.model.Pod; // The Fabric8 Pod model
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.quarkiverse.mcp.server.McpLog;
@@ -13,9 +15,7 @@ import jakarta.ws.rs.core.HttpHeaders;
 @ApplicationScoped
 public class JanusServer {
 
-	public JanusServer() {
-		System.out.println("Constructing Janus Server");
-	}
+	private static final Logger LOG = Logger.getLogger(JanusServer.class);
 
 	// Inject the KubernetesClient. Quarkus will configure this automatically
 	// to talk to the OpenShift cluster it's running in.
