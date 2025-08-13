@@ -20,6 +20,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.KubernetesServer;
 import io.quarkus.test.kubernetes.client.KubernetesTestServer;
 import io.quarkus.test.kubernetes.client.WithKubernetesTestServer;
+import io.quarkus.test.security.TestSecurity;
 import jakarta.inject.Inject;
 
 @QuarkusTest
@@ -49,6 +50,7 @@ public class JanusServerTest extends JanusTest {
     }
 
     @Test
+    @TestSecurity(user = "test-user", roles = { "viewer" })
     public void testReadAttributeTool_InvalidPod() {
         McpStreamableTestClient mcpClient = McpAssured.newStreamableClient().setMcpPath(mcpPath).build().connect();
 
@@ -64,6 +66,7 @@ public class JanusServerTest extends JanusTest {
     }
 
     @Test
+    @TestSecurity(user = "test-user", roles = { "viewer" })
     public void testReadAttributeTool_ValidPod() {
 
         Pod validPod = buildPod(1, 1).build();
