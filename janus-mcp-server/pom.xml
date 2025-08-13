@@ -10,9 +10,15 @@
     <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
     <quarkus.platform.version>3.24.4</quarkus.platform.version>
     <quarkus.mcp.version>1.4.0</quarkus.mcp.version>
+
     <jayway.jsonpath.version>2.9.0</jayway.jsonpath.version>
+
+    <!-- Jolokia version -->
+    <jolokia.version>2.3.0</jolokia.version>
+
     <skipITs>true</skipITs>
     <surefire-plugin.version>3.3.1</surefire-plugin.version>
 
@@ -20,8 +26,10 @@
     <quarkus.container-image.registry>quay.io</quarkus.container-image.registry>
     <quarkus.container-image.group>hawtio</quarkus.container-image.group>
     <quarkus.container-image.name>hawtio-synapse-janus</quarkus.container-image.name>
+
     <quarkus.container-image.build>true</quarkus.container-image.build>
     <quarkus.container-image.push>true</quarkus.container-image.push>
+    <quarkus.kubernetes.format>yaml</quarkus.kubernetes.format>
   </properties>
 
   <dependencyManagement>
@@ -30,6 +38,14 @@
         <groupId>io.quarkus.platform</groupId>
         <artifactId>quarkus-bom</artifactId>
         <version>${quarkus.platform.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jolokia</groupId>
+        <artifactId>jolokia-bom</artifactId>
+        <version>${jolokia.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -58,6 +74,10 @@
       <artifactId>quarkus-rest-jackson</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-cache</artifactId>
+    </dependency>
+    <dependency>
       <groupId>io.quarkiverse.mcp</groupId>
       <artifactId>quarkus-mcp-server-sse</artifactId>
       <version>${quarkus.mcp.version}</version>
@@ -66,6 +86,15 @@
       <groupId>com.jayway.jsonpath</groupId>
       <artifactId>json-path</artifactId>
       <version>${jayway.jsonpath.version}</version>
+    </dependency>
+
+    <dependency>
+        <groupId>org.jolokia</groupId>
+        <artifactId>jolokia-json</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.jolokia</groupId>
+        <artifactId>jolokia-client-java</artifactId>
     </dependency>
 
     <dependency>

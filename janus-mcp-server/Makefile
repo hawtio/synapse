@@ -46,6 +46,8 @@ CUSTOM_IMAGE_NAME ?= $(IMAGE_NAME)
 CUSTOM_VERSION ?= $(VERSION)
 IMAGE_PUSH ?= false
 
+KUBE_DEPLOY_RESOURCE := target/kubernetes/kubernetes.yml
+
 RELEASE_GIT_REMOTE := origin
 GIT_COMMIT := $(shell if [ -d .git ]; then git rev-list -1 HEAD; else echo "$(CUSTOM_VERSION)"; fi)
 LINT_GOGC := 10
@@ -118,8 +120,18 @@ build: mvn
 	  -D quarkus.container-image.tag=$(CUSTOM_VERSION) \
 	  -D quarkus.container-image.push=$(IMAGE_PUSH)
 
+deploy: kubectl
+	@echo "####### Deploying janus-mcp-server ..."
+	if [ -f "$(KUBE_DEPLOY_RESOURCE)" ]; then \
+		kubectl apply -f $(KUBE_DEPLOY_RESOURCE); \
+	else \
+		echo "Error: No deploy resource has been built"; \
+	fi
+
+
 test-inspect: npx
 	npx @modelcontextprotocol/inspector
+	
 
 clean:
 	mvn clean -D skipTests
