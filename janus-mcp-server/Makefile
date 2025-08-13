@@ -29,6 +29,7 @@ OPM_VERSION := v1.24.0
 IMAGE_REGISTRY := quay.io
 IMAGE_GROUP := hawtio
 IMAGE_NAME := synapse-janus
+IMAGE_FULL_NAME := $(IMAGE_REGISTRY)/$(IMAGE_GROUP)/$(IMAGE_NAME)
 
 # Replace SNAPSHOT with the current timestamp
 DATETIMESTAMP=$(shell date -u '+%Y%m%d-%H%M%S')
@@ -44,6 +45,7 @@ CUSTOM_IMAGE_REGISTRY ?= $(IMAGE_REGISTRY)
 CUSTOM_IMAGE_GROUP ?= $(IMAGE_GROUP)
 CUSTOM_IMAGE_NAME ?= $(IMAGE_NAME)
 CUSTOM_VERSION ?= $(VERSION)
+CUSTOM_IMAGE_FULL_NAME := $(CUSTOM_IMAGE_REGISTRY)/$(CUSTOM_IMAGE_GROUP)/$(CUSTOM_IMAGE_NAME)
 IMAGE_PUSH ?= false
 
 KUBE_DEPLOY_RESOURCE := target/kubernetes/kubernetes.yml
@@ -120,18 +122,10 @@ build: mvn
 	  -D quarkus.container-image.tag=$(CUSTOM_VERSION) \
 	  -D quarkus.container-image.push=$(IMAGE_PUSH)
 
-deploy: kubectl
-	@echo "####### Deploying janus-mcp-server ..."
-	if [ -f "$(KUBE_DEPLOY_RESOURCE)" ]; then \
-		kubectl apply -f $(KUBE_DEPLOY_RESOURCE); \
-	else \
-		echo "Error: No deploy resource has been built"; \
-	fi
-
 
 test-inspect: npx
 	npx @modelcontextprotocol/inspector
-	
+
 
 clean:
 	mvn clean -D skipTests
