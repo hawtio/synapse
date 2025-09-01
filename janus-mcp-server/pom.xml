@@ -51,6 +51,12 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+
+      <dependency>
+        <groupId>org.jolokia</groupId>
+        <artifactId>jolokia-json</artifactId>
+        <version>${jolokia.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -91,12 +97,12 @@
     </dependency>
 
     <dependency>
-        <groupId>org.jolokia</groupId>
-        <artifactId>jolokia-json</artifactId>
+      <groupId>org.jolokia</groupId>
+      <artifactId>jolokia-json</artifactId>
     </dependency>
     <dependency>
-        <groupId>org.jolokia</groupId>
-        <artifactId>jolokia-client-java</artifactId>
+      <groupId>org.jolokia</groupId>
+      <artifactId>jolokia-client-java</artifactId>
     </dependency>
 
     <dependency>
