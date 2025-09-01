@@ -1,0 +1,14 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: janus-mcp-server
+  namespace: hawtio
+  labels:
+    app.kubernetes.io/name: janus-mcp-server
+spec:
+  to:
+    kind: Service
+    name: janus-mcp-server
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: reencrypt

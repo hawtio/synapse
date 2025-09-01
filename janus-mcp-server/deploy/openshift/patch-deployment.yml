@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: janus-mcp-server
+spec:
+  template:
+    spec:
+      containers:
+        - name: janus-mcp-server
+          volumeMounts:
+            - name: janus-mcp-tls-proxying
+              mountPath: /etc/tls/private/proxying
+      volumes:
+        - name: janus-mcp-tls-proxying
+          secret:
+            secretName: janus-mcp-tls-proxying

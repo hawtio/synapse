@@ -120,18 +120,10 @@ build: mvn
 	  -D quarkus.container-image.tag=$(CUSTOM_VERSION) \
 	  -D quarkus.container-image.push=$(IMAGE_PUSH)
 
-deploy: kubectl
-	@echo "####### Deploying janus-mcp-server ..."
-	if [ -f "$(KUBE_DEPLOY_RESOURCE)" ]; then \
-		kubectl apply -f $(KUBE_DEPLOY_RESOURCE); \
-	else \
-		echo "Error: No deploy resource has been built"; \
-	fi
-
 
 test-inspect: npx
 	npx @modelcontextprotocol/inspector
-	
+
 
 clean:
 	mvn clean -D skipTests
