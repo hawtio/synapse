@@ -104,6 +104,10 @@
       <groupId>org.jolokia</groupId>
       <artifactId>jolokia-client-java</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-oidc</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>io.quarkiverse.mcp</groupId>

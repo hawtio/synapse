@@ -15,17 +15,47 @@ import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.quarkiverse.mcp.server.test.McpAssured;
 import io.quarkiverse.mcp.server.test.McpAssured.McpStreamableTestClient;
+import io.quarkus.security.credential.TokenCredential;
+import io.quarkus.security.identity.SecurityIdentity;
+import io.quarkus.security.runtime.QuarkusSecurityIdentity;
+import io.quarkus.test.Mock;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.KubernetesServer;
 import io.quarkus.test.kubernetes.client.KubernetesTestServer;
 import io.quarkus.test.kubernetes.client.WithKubernetesTestServer;
 import io.quarkus.test.security.TestSecurity;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 
 @QuarkusTest
 @WithKubernetesTestServer
 public class JanusServerTest extends JanusTest {
+
+    /**
+     * This nested class provides a mock implementation of a bean.
+     * In this case, it produces a SecurityIdentity for our tests.
+     */
+    @ApplicationScoped
+    static class MockSecurityIdentityProducer {
+
+        @Produces
+        @Mock
+        public SecurityIdentity securityIdentity() {
+            // Create a builder for the mock identity
+            QuarkusSecurityIdentity.Builder builder = QuarkusSecurityIdentity.builder();
+
+            // Set the user principal (optional but good practice)
+            builder.setPrincipal(() -> "test-user");
+
+            // Add the token credential mirroring the bearer token that would be applied in production
+            builder.addCredential(new TokenCredential("dummy-jwt-for-testing", "jwt"));
+
+            // Build and return the complete, mock SecurityIdentity
+            return builder.build();
+        }
+    }
 
     @TestHTTPResource
     protected URI testUri;
@@ -45,7 +75,6 @@ public class JanusServerTest extends JanusTest {
 
     @BeforeEach
     public void setTestUri() {
-        System.out.println("testUri: " + testUri);
         McpAssured.baseUri = testUri;
     }
 
