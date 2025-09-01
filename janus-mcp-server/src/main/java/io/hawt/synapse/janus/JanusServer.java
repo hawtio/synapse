@@ -155,7 +155,7 @@ public class JanusServer {
             }
 
         } catch (Exception ex) {
-            LOG.error("Pod " + podName + " produced an error while quering the application's jolokia service", ex);
+            LOG.error("Pod " + podName + " produced an error while querying the application's jolokia service", ex);
             return ToolResponse.error(
                     String.format("Pod '%s' produced an error while quering the application's jolokia service: %s",
                             podName, ex.getMessage()));
