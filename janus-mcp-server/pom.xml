@@ -29,7 +29,9 @@
 
     <quarkus.container-image.build>true</quarkus.container-image.build>
     <quarkus.container-image.push>true</quarkus.container-image.push>
-    <quarkus.kubernetes.format>yaml</quarkus.kubernetes.format>
+
+    <quarkus.kubernetes.generate>false</quarkus.kubernetes.generate>
+    <quarkus.openshift.generate>false</quarkus.openshift.generate>
   </properties>
 
   <dependencyManagement>
