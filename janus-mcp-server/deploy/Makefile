@@ -69,9 +69,9 @@ SSL_INGRESS_PATCH := patch-ingress-ssl-ports.yml
 # Parameter: directory of the kustomization.yaml
 #
 define set-kustomize-image
-	$(if $(filter $(IMAGE_NAME),$(CUSTOM_IMAGE):$(CUSTOM_VERSION)),,\
+	$(if $(filter $(IMAGE_FULL_NAME),$(CUSTOM_IMAGE_FULL_NAME):$(CUSTOM_VERSION)),,\
 		@cd $(1) || exit 1 && \
-			$(KUSTOMIZE) edit set image $(IMAGE_NAME)=$(CUSTOM_IMAGE):$(CUSTOM_VERSION))
+			$(KUSTOMIZE) edit set image $(IMAGE_FULL_NAME)=$(CUSTOM_IMAGE_FULL_NAME):$(CUSTOM_VERSION))
 endef
 
 #
@@ -139,7 +139,9 @@ endif
 #** NAMESPACE:               Set the namespace for the resources
 #** INTERNAL_SERVER_SSL:     Set whether SSL should be used for internal server communication
 #**                            (only configurable in 'k8s' -- assumed in 'openshift')
-#** CUSTOM_IMAGE:            Set a custom image to install from
+#** CUSTOM_IMAGE_REGISTRY    Set a custom image registry to install from
+#** CUSTOM_IMAGE_GROUP       Set a custom image group to install from
+#** CUSTOM_IMAGE_NAME        Set a custom image name to install from
 #** CUSTOM_VERSION:          Set a custom version to install from
 #** DRY_RUN:                 Print the resources to be applied instead of applying them
 #**                            [ true | false ]
