@@ -9,15 +9,3 @@ resources:
 patchesStrategicMerge:
 - patch-deployment.yml
 - patch-service.yml
-
-# OCP should always use internal SSL
-patches:
-- path: ../patches/patch-deployment-ssl-serving-secret.yml
-  target:
-    kind: Deployment
-- path: ../patches/patch-deployment-ssl-ports.yml
-  target:
-    kind: Deployment
-- path: ../patches/patch-service-ssl-ports.yml
-  target:
-    kind: Service
