@@ -109,20 +109,21 @@ check-admin: kubectl
 
 # SSL support is mandatory for OpenShift so no need to add
 .ssl-support:
-ifneq ($(CLUSTER_TYPE), openshift)
-ifeq ($(INTERNAL_SERVER_SSL), true)
-	# SSL optional for other kubernetes platforms
-	@$(call add-remove-kind-patch,$(BASE),add,../$(SSL_DEPLOYMENT_SECRET_PATCH),Deployment)
-	@$(call add-remove-kind-patch,$(BASE),add,../$(SSL_DEPLOYMENT_PORTS_PATCH),Deployment)
-	@$(call add-remove-kind-patch,$(BASE),add,../$(SSL_SERVICE_PATCH),Service)
-	@$(call add-remove-kind-patch,$(CLUSTER_TYPE),add,../$(SSL_INGRESS_PATCH),Ingress)
-else
-	@$(call add-remove-kind-patch,$(BASE),remove,../$(SSL_DEPLOYMENT_SECRET_PATCH),Deployment)
-	@$(call add-remove-kind-patch,$(BASE),remove,../$(SSL_DEPLOYMENT_PORTS_PATCH),Deployment)
-	@$(call add-remove-kind-patch,$(BASE),remove,../$(SSL_SERVICE_PATCH),Service)
-	@$(call add-remove-kind-patch,$(CLUSTER_TYPE),remove,../$(SSL_INGRESS_PATCH),Ingress)
-endif
-endif
+	echo "SSL support disabled"
+#ifneq ($(CLUSTER_TYPE), openshift)
+#ifeq ($(INTERNAL_SERVER_SSL), true)
+#	# SSL optional for other kubernetes platforms
+#	@$(call add-remove-kind-patch,$(BASE),add,../$(SSL_DEPLOYMENT_SECRET_PATCH),Deployment)
+#	@$(call add-remove-kind-patch,$(BASE),add,../$(SSL_DEPLOYMENT_PORTS_PATCH),Deployment)
+#	@$(call add-remove-kind-patch,$(BASE),add,../$(SSL_SERVICE_PATCH),Service)
+#	@$(call add-remove-kind-patch,$(CLUSTER_TYPE),add,../$(SSL_INGRESS_PATCH),Ingress)
+#else
+#	@$(call add-remove-kind-patch,$(BASE),remove,../$(SSL_DEPLOYMENT_SECRET_PATCH),Deployment)
+#	@$(call add-remove-kind-patch,$(BASE),remove,../$(SSL_DEPLOYMENT_PORTS_PATCH),Deployment)
+#	@$(call add-remove-kind-patch,$(BASE),remove,../$(SSL_SERVICE_PATCH),Service)
+#	@$(call add-remove-kind-patch,$(CLUSTER_TYPE),remove,../$(SSL_INGRESS_PATCH),Ingress)
+#endif
+#endif
 
 #---
 #

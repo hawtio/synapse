@@ -7,7 +7,8 @@ public interface JolokiaServiceFactory {
      * 
      * @param url The full base URL for the Jolokia endpoint (e.g.,
      *            http://10.1.2.3:8778/jolokia)
+     * @param authToken Authentication token for accessing the target jolokia applications
      * @return A new, ready-to-use JolokiaService.
      */
-    JolokiaService createService(String url);
+    JolokiaService createService(String url, String authToken) throws Exception;
 }

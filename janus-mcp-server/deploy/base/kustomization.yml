@@ -2,7 +2,9 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-- service-account.yml
-- role-binding.yml
+- serviceaccount.yml
+- view-rolebinding.yml
+- serviceaccount-role.yml
+- serviceaccount-rolebinding.yml
 - deployment.yml
 - service.yml

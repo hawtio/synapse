@@ -1,13 +1,18 @@
 package io.hawt.synapse.janus;
 
 import java.net.URL;
+import java.util.Collections;
 import java.util.Optional;
 
-import org.apache.http.auth.AuthenticationException;
+import javax.naming.AuthenticationException;
+
 import org.jboss.logging.Logger;
 import org.jolokia.json.JSONObject;
 
 import io.fabric8.kubernetes.api.model.Pod; // The Fabric8 Pod model
+import io.fabric8.kubernetes.api.model.authentication.TokenReview;
+import io.fabric8.kubernetes.api.model.authentication.TokenReviewSpec;
+import io.fabric8.kubernetes.api.model.authentication.TokenReviewStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.quarkiverse.mcp.server.EmbeddedResource;
 import io.quarkiverse.mcp.server.McpLog;
@@ -15,9 +20,7 @@ import io.quarkiverse.mcp.server.TextResourceContents;
 import io.quarkiverse.mcp.server.Tool;
 import io.quarkiverse.mcp.server.ToolArg;
 import io.quarkiverse.mcp.server.ToolResponse;
-import io.quarkus.security.Authenticated;
-import io.quarkus.security.credential.TokenCredential;
-import io.quarkus.security.identity.SecurityIdentity;
+import io.vertx.core.http.HttpServerRequest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -27,7 +30,7 @@ public class JanusServer {
     private static final Logger LOG = Logger.getLogger(JanusServer.class);
 
     @Inject
-    private SecurityIdentity securityIdentity;
+    HttpServerRequest request; // For getting the Authorization header
 
     // Inject the KubernetesClient. Quarkus will configure this automatically
     // to talk to the OpenShift cluster it's running in.
@@ -40,46 +43,71 @@ public class JanusServer {
     @Inject
     JolokiaServiceFactory jolokiaServiceFactory;
 
-    private String validateToken() throws Exception {
-        LOG.info("Security Identity: " + securityIdentity.getPrincipal().getName());
-        TokenCredential credential = securityIdentity.getCredential(TokenCredential.class);
-        if (credential == null) {
-            throw new AuthenticationException("Failed to retrieve authentication credential");
+    /**
+     * Extracts the bearer token from the Authorization header.
+     * @return The token string, or null if not present.
+     */
+    private String getBearerToken() {
+        final String authorization = request.getHeader("Authorization");
+        if (authorization != null && authorization.startsWith("Bearer ")) {
+            return authorization.substring(7);
+        }
+        return null;
+    }
+
+    private String validateToken(String namespace, String podName) throws Exception {
+        String token = getBearerToken();
+        if (token == null) {
+            throw new AuthenticationException("Authentication failed: No bearer token provided.");
         }
 
-        String token = credential.getToken();
-        if (token == null) {
-            throw new AuthenticationException("Failed to retrieve the token from the authentication credential");
+        // Create a TokenReview object with the user's token
+        TokenReview review = new TokenReview();
+        review.setSpec(new TokenReviewSpec(Collections.emptyList(), token));
+
+        // Submit the review to the Kubernetes API server
+        TokenReview result = k8sClient.authentication().v1().tokenReviews().create(review);
+
+        // Check the status of the review
+        TokenReviewStatus status = result.getStatus();
+        if (status == null || ! status.getAuthenticated()) {
+            // Token is invalid or unauthenticated
+            String error = (status != null) ? status.getError() : "Unknown";
+            LOG.warnf("Token validation failed: {}", error);
+            throw new AuthenticationException("Token validation failed. Could not authenticate.");
         }
 
         return token;
     }
 
-    private JolokiaService getJolokiaService(URL jolokiaUrl) throws Exception {
+    private JolokiaService getJolokiaService(URL jolokiaUrl, String authToken) throws Exception {
         if (jolokiaUrl == null) {
             throw new Exception("Cannot instantiate a jolokia service as the url is null");
         }
-        return jolokiaServiceFactory.createService(jolokiaUrl.toString());
+
+        if (authToken == null) {
+            throw new Exception("Cannot instantiate a jolokia service as the authToken is null");
+        }
+        return jolokiaServiceFactory.createService(jolokiaUrl.toString(), authToken);
     }
 
     /**
      * Reads the version of the jolokia server from a uniquely identified pod.
      */
     @Tool(description = "Reads the version of the jolokia server attached to a specific pod in a specific namespace.")
-    @Authenticated
     public ToolResponse version(@ToolArg(description = "The Kubernetes namespace of the target pod") String namespace,
             @ToolArg(description = "The name of the target pod") String podName, McpLog log) {
 
         // --- Security Check ---
         String authToken = null;
         try {
-            authToken = this.validateToken();
+            authToken = this.validateToken(namespace, podName);
         } catch (Exception ex) {
             LOG.error("Pod " + podName + " produced an error while validation authentication", ex);
             return ToolResponse.error("Failed to validate authentication: " + ex.getMessage());
         }
 
-        log.info("Received valid authorization token: " + authToken);
+        LOG.info("Received valid authorization token: " + authToken);
 
         // --- Dynamic Service Discovery Logic ---
         Pod targetPod = null;
@@ -128,7 +156,7 @@ public class JanusServer {
         }
 
         try {
-            Optional<JSONObject> versionOptional = getJolokiaService(jolokiaUrl).version();
+            Optional<JSONObject> versionOptional = getJolokiaService(jolokiaUrl, authToken).version();
             if (versionOptional.isPresent()) {
                 JSONObject version = versionOptional.get();
                 LOG.info(String.format("Successfully retrieved Jolokia version from pod %s", podName));
@@ -166,7 +194,6 @@ public class JanusServer {
      * Reads a specific JMX MBean attribute from a uniquely identified pod.
      */
     @Tool(description = "Read an attribute from a given MBean on a specific pod in a specific namespace.")
-    @Authenticated
     public ToolResponse readAttribute(
             @ToolArg(description = "The Kubernetes namespace of the target pod") String namespace,
             @ToolArg(description = "The name of the target pod") String podName,
@@ -176,7 +203,7 @@ public class JanusServer {
         // --- Security Check ---
         String authToken = null;
         try {
-            authToken = this.validateToken();
+            authToken = this.validateToken(namespace, podName);
         } catch (Exception ex) {
             LOG.error("Pod " + podName + " produced an error while validation authentication", ex);
             return ToolResponse.error("Failed to validate authentication: " + ex.getMessage());
