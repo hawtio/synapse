@@ -30,6 +30,9 @@
     <quarkus.container-image.build>true</quarkus.container-image.build>
     <quarkus.container-image.push>true</quarkus.container-image.push>
     <quarkus.kubernetes.format>yaml</quarkus.kubernetes.format>
+
+    <!-- argLine property for surefire and mockito coupling -->
+    <argLine></argLine>
   </properties>
 
   <dependencyManagement>
@@ -118,6 +121,11 @@
       <artifactId>quarkus-test-kubernetes-client</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.jboss.logmanager</groupId>
+      <artifactId>jboss-logmanager</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -138,6 +146,31 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-mockito-agent</id>
+            <phase>process-test-classes</phase>
+            <goals>
+                <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.mockito</groupId>
+                  <artifactId>mockito-core</artifactId>
+                  <destFileName>mockito-agent.jar</destFileName>
+                  <outputDirectory>${project.build.directory}/agents</outputDirectory>
+                </artifactItem>
+                </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${compiler-plugin.version}</version>
@@ -145,6 +178,7 @@
           <parameters>true</parameters>
         </configuration>
       </plugin>
+
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire-plugin.version}</version>
@@ -153,8 +187,21 @@
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
             <maven.home>${maven.home}</maven.home>
           </systemPropertyVariables>
+          <!-- allow mockito inline-mock-maker -->
+          <argLine>@{argLine} -javaagent:${project.build.directory}/agents/mockito-agent.jar</argLine>
+          <reportFormat>plain</reportFormat>
+          <statelessTestsetInfoReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5StatelessTestsetInfoTreeReporter"/>
         </configuration>
+        <!-- JUnit5 Reporter -->
+        <dependencies>
+          <dependency>
+            <groupId>me.fabriciorby</groupId>
+            <artifactId>maven-surefire-junit5-tree-reporter</artifactId>
+            <version>0.1.0</version>
+          </dependency>
+        </dependencies>
       </plugin>
+
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>${surefire-plugin.version}</version>

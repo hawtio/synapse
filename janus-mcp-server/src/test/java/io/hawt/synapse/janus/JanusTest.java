@@ -7,16 +7,10 @@ import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.PodBuilder;
 import io.fabric8.kubernetes.api.model.PodSpecBuilder;
+import io.fabric8.kubernetes.api.model.authentication.TokenReview;
+import io.fabric8.kubernetes.api.model.authentication.TokenReviewBuilder;
 
-public abstract class JanusTest {
-
-    protected static final Integer JOLOKIA_CONTAINER_PORT = 8778;
-
-    protected static final String NAMESPACE = "hawtio-dev";
-
-    protected static final String POD_NAME = "hawtio-example-999";
-
-    protected static final String POD_IP = "10.0.0.10";
+public abstract class JanusTest implements TestConstants {
 
     protected static ContainerBuilder buildContainer(boolean addJolokiaPort) {
         ContainerBuilder builder = new ContainerBuilder();
@@ -53,4 +47,17 @@ public abstract class JanusTest {
         return builder;
     }
 
+    protected static TokenReview tokenReview(String reviewName, String token, boolean authenticated) {
+        return new TokenReviewBuilder()
+                .withNewMetadata()
+                    .withName(reviewName)
+                .endMetadata()
+                .withNewSpec()
+                    .withToken(token)
+                .endSpec()
+                .withNewStatus()
+                    .withAuthenticated(authenticated)
+                .endStatus()
+                .build();
+    }
 }

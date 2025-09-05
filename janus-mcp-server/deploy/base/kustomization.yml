@@ -4,5 +4,7 @@ kind: Kustomization
 resources:
 - serviceaccount.yml
 - view-rolebinding.yml
+- serviceaccount-role.yml
+- serviceaccount-rolebinding.yml
 - deployment.yml
 - service.yml
