@@ -94,5 +94,9 @@ USER 185
 ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
 
-ENTRYPOINT [ "/opt/jboss/container/java/run/run-java.sh" ]
+# Copy wrapper script into the container and make the script executable
+COPY --chown=185:0 src/main/docker/run-janus.sh /deployments/run-janus.sh
+RUN chmod +x /deployments/run-janus.sh
+
+ENTRYPOINT [ "/deployments/run-janus.sh" ]
 

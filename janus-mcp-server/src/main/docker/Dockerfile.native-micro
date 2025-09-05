@@ -29,4 +29,12 @@ COPY --chown=1001:root --chmod=0755 target/*-runner /work/application
 EXPOSE 8080
 USER 1001
 
-ENTRYPOINT ["./application", "-Dquarkus.http.host=0.0.0.0"]
+# Copy wrapper script into the container and make the script executable
+COPY src/main/docker/run-janus.sh /work/run-janus.sh
+RUN chmod +x /work/run-janus.sh
+
+# Use your wrapper script as the entrypoint
+ENTRYPOINT ["./run-janus.sh"]
+
+# The original command-line arguments are passed to the entrypoint
+CMD ["-Dquarkus.http.host=0.0.0.0"]
