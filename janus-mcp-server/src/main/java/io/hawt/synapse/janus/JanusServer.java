@@ -85,11 +85,15 @@ public class JanusServer {
         return token;
     }
 
-    private JolokiaService getJolokiaService(URL jolokiaUrl) throws Exception {
+    private JolokiaService getJolokiaService(URL jolokiaUrl, String authToken) throws Exception {
         if (jolokiaUrl == null) {
             throw new Exception("Cannot instantiate a jolokia service as the url is null");
         }
-        return jolokiaServiceFactory.createService(jolokiaUrl.toString());
+
+        if (authToken == null) {
+            throw new Exception("Cannot instantiate a jolokia service as the authToken is null");
+        }
+        return jolokiaServiceFactory.createService(jolokiaUrl.toString(), authToken);
     }
 
     /**
@@ -157,7 +161,7 @@ public class JanusServer {
         }
 
         try {
-            Optional<JSONObject> versionOptional = getJolokiaService(jolokiaUrl).version();
+            Optional<JSONObject> versionOptional = getJolokiaService(jolokiaUrl, authToken).version();
             if (versionOptional.isPresent()) {
                 JSONObject version = versionOptional.get();
                 LOG.info(String.format("Successfully retrieved Jolokia version from pod %s", podName));
@@ -184,7 +188,7 @@ public class JanusServer {
             }
 
         } catch (Exception ex) {
-            LOG.error("Pod " + podName + " produced an error while quering the application's jolokia service", ex);
+            LOG.error("Pod " + podName + " produced an error while querying the application's jolokia service", ex);
             return ToolResponse.error(
                     String.format("Pod '%s' produced an error while quering the application's jolokia service: %s",
                             podName, ex.getMessage()));
