@@ -181,7 +181,7 @@ public class JanusServer {
                 return ToolResponse.success(embeddedResource);
             } else {
                 // The tool worked, but Jolokia returned nothing.
-                LOG.warnf("Pod {} returned an empty optional for Jolokia version.", podName);
+                LOG.warnf("Pod %s returned an empty optional for Jolokia version.", podName);
                 return ToolResponse.success(String.format(
                         "Successfully connected to pod '%s', but no version information was returned by the Jolokia endpoint.",
                         podName));

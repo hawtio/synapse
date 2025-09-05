@@ -8,10 +8,8 @@ spec:
       containers:
         - name: janus-mcp-server
           env:
-            - name: MP_JWT_VERIFY_ISSUER
-              value: https://openshift.default.svc
-            - name: QUARKUS_TLS_TRUST_STORE_PEM_CERTS
-              value: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            - name: JANUS_LOG_LEVEL
+              value: DEBUG
           volumeMounts:
             - name: janus-mcp-tls-proxying
               mountPath: /etc/tls/private/proxying

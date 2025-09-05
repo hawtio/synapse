@@ -110,12 +110,15 @@ public class JolokiaClientFactory implements JolokiaServiceFactory {
 
         public JolokiaClient(
                 @ConfigProperty(name = "jolokia.mcp.url", defaultValue = "http://localhost:8778/jolokia") String jolokiaUrl, String authToken) throws Exception {
+            LOG.debugf("Creating the Jolokia client [ url: %s, authToken: %s ]", jolokiaUrl, authToken);
 
             SSLContext sslContext = this.createPermissiveTLSContext();
             // Do not verify the hostname
+            LOG.debug("Creating socket factory with no-op hostname verifier");
             SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(
                     sslContext, NoopHostnameVerifier.INSTANCE);
 
+            LOG.debug("Constructing J4pClient with SSL and Bearer Token support");
             jolokiaClient = new J4pClient(jolokiaUrl);
             jolokiaClient = new J4pClientBuilder()
                     .url(jolokiaUrl)
@@ -133,6 +136,8 @@ public class JolokiaClientFactory implements JolokiaServiceFactory {
          * @return SSLContext
          */
         private SSLContext createPermissiveTLSContext() throws Exception {
+            LOG.debugf("Creating the permissive SSL context [ certificate: %s. key: %s ]", CLIENT_CERT_PATH, CLIENT_KEY_PATH);
+
             // Load the client's full certificate chain from the PEM file
             CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
             Collection<? extends Certificate> certs;
